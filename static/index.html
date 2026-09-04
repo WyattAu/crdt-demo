@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>crdt-demo — live multi-user editing</title>
+<style>
+  :root {
+    --bg-primary: #050505;
+    --bg-secondary: #0a0a0a;
+    --bg-card: #111111;
+    --text-primary: #ffffff;
+    --text-secondary: #a0a0a0;
+    --accent: #00e5ff;
+    --accent-warm: #ff6b35;
+    --border: #222222;
+    --mono: ui-monospace, "JetBrains Mono", "Fira Code", Menlo, Consolas, monospace;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; min-height: 100vh; display: flex; flex-direction: column; align-items: center;
+    background: var(--bg-primary); color: var(--text-primary);
+    font-family: var(--mono); padding: 2rem 1rem;
+  }
+  header { width: min(860px, 100%); }
+  h1 { font-size: 1.35rem; margin: 0 0 .5rem; letter-spacing: .02em; }
+  h1 .accent { color: var(--accent); }
+  .sub { color: var(--text-secondary); font-size: .85rem; line-height: 1.6; margin: 0; }
+  .badges { display: flex; gap: .5rem; flex-wrap: wrap; margin: 1.1rem 0; }
+  .badge {
+    border: 1px solid var(--border); background: var(--bg-card); border-radius: 999px;
+    padding: .3rem .75rem; font-size: .75rem; color: var(--text-secondary);
+  }
+  .badge b { color: var(--text-primary); font-weight: 600; }
+  #site { border-color: var(--accent); color: var(--accent); }
+  #status.live { color: var(--accent); }
+  #status.down { color: var(--accent-warm); }
+  #editor {
+    width: min(860px, 100%); height: 50vh; resize: vertical;
+    background: var(--bg-secondary); color: var(--text-primary);
+    border: 1px solid var(--border); border-radius: .6rem;
+    padding: 1rem; font: 400 .95rem/1.6 var(--mono); outline: none;
+    caret-color: var(--accent);
+  }
+  #editor:focus { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+  #editor:disabled { opacity: .5; }
+  footer { width: min(860px, 100%); margin-top: 1rem; color: var(--text-secondary); font-size: .75rem; line-height: 1.7; }
+  footer a { color: var(--accent); text-decoration: none; }
+  footer a:hover { text-decoration: underline; }
+  footer .warm { color: var(--accent-warm); }
+</style>
+</head>
+<body>
+  <header>
+    <h1>crdt<span class="accent">-demo</span> — everyone types, everyone converges</h1>
+    <p class="sub">Open this page in two or more tabs and type in all of them at once. Every keystroke becomes an
+    RGA operation; every replica converges on the same text — no locks, no merge conflicts, no last-write-wins.
+    Name yourself by appending <b>?token=Alice</b> to the URL.</p>
+    <div class="badges">
+      <span class="badge" id="site">site #…</span>
+      <span class="badge">conn <b id="status">connecting…</b></span>
+      <span class="badge">peers <b id="peers">—</b></span>
+      <span class="badge">ops applied <b id="ops">0</b></span>
+    </div>
+  </header>
+  <textarea id="editor" spellcheck="false" autocomplete="off" placeholder="Type here — then open a second tab and type there too."></textarea>
+  <footer>
+    <p>Powered by <a href="https://crates.io/crates/crdts-kit">crdts-kit</a> (RGA text CRDT) and
+    <a href="https://crates.io/crates/ws-kit">ws-kit</a> (WebSocket broadcast rooms) on axum —
+    one Rust binary, zero framework in the browser. <span class="warm">Keyboard undo/redo and IME are out of scope for the demo.</span></p>
+  </footer>
+  <script src="/app.js" defer></script>
+</body>
+</html>
