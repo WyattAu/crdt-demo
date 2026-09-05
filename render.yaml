@@ -1,0 +1,13 @@
+# Render.com blueprint — deploy via "New +" > "Blueprint" after pushing this
+# repo, or `render blueprint launch` from this directory.
+# Render injects $PORT automatically; the binary binds to whatever it's set
+# to (default 8080 locally).
+
+services:
+  - type: web
+    name: crdt-demo
+    runtime: docker
+    plan: starter
+    autoDeploy: true
+    # No dedicated /healthz — GET / returns 200 and serves as liveness.
+    healthCheckPath: /

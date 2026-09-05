@@ -1,0 +1,6 @@
+target
+.git
+tests
+*.md
+fly.toml
+render.yaml
