@@ -4,6 +4,12 @@ version = "0.1.0"
 edition = "2021"
 description = "Live multi-user CRDT collaborative-editing demo — crdts-kit + ws-kit, single binary"
 publish = false
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/WyattAu/crdt-demo"
+keywords = ["crdt", "collaboration", "websocket", "demo"]
+categories = ["concurrency", "web-programming"]
+rust-version = "1.85"
+exclude = ["/target"]
 
 [dependencies]
 axum = { version = "0.8", features = ["ws"] }
@@ -23,3 +29,7 @@ tower = { version = "0.5", features = ["util"] }
 
 [profile.release]
 strip = true
+
+[lints.clippy]
+unwrap_used = "warn"
+expect_used = "warn"
