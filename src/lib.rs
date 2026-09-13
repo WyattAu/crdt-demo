@@ -147,18 +147,46 @@ async fn ws_handler(
     let name = state
         .extractor
         .extract_token(&parts, query.as_deref().unwrap_or(""))
-        .map(|t| {
-            let mut t = t.trim().to_string();
-            t.truncate(24);
-            if t.is_empty() {
-                "guest".to_string()
-            } else {
-                t
-            }
-        })
+        .map(|t| sanitize_name(&t))
         .unwrap_or_else(|| "guest".to_string());
     let site = state.next_site.fetch_add(1, Ordering::Relaxed);
     ws.on_upgrade(move |socket| handle_socket(socket, state, site, name))
+}
+
+/// Normalizes an extracted token into a safe display name.
+///
+/// Upstream workaround: ws-kit's `url_decode` (< 0.5) percent-decodes byte by
+/// byte into `char`s, so any multi-byte UTF-8 token comes back as Latin-1
+/// mojibake (`人` → "äºº"). When the result only contains chars that could be
+/// misdecoded bytes and re-reading them as UTF-8 succeeds, prefer that
+/// reading. Tokens that decode to invalid UTF-8 fall back to "guest".
+fn sanitize_name(token: &str) -> String {
+    let repaired = repair_mojibake(token.trim());
+    // Truncate at 24 bytes without slicing through a multi-byte char.
+    let mut end = repaired.len().min(24);
+    while end > 0 && !repaired.is_char_boundary(end) {
+        end -= 1;
+    }
+    let name = &repaired[..end];
+    if name.is_empty() {
+        "guest".to_string()
+    } else {
+        name.to_string()
+    }
+}
+
+/// Reinterprets a Latin-1-mojibake string as UTF-8 when that reading is valid.
+fn repair_mojibake(s: &str) -> String {
+    if s.is_ascii() {
+        return s.to_string();
+    }
+    let bytes: Vec<u8> = s.chars().map(|c| c as u32 as u8).collect();
+    match String::from_utf8(bytes) {
+        Ok(utf8) => utf8,
+        // A real non-Latin-1 char (e.g. an actual CJK char) survived the
+        // extractor; the byte reinterpretation can't represent it.
+        Err(_) => s.to_string(),
+    }
 }
 
 async fn handle_socket(socket: WebSocket, state: SharedState, site: u32, name: String) {
@@ -186,7 +214,10 @@ async fn handle_socket(socket: WebSocket, state: SharedState, site: u32, name: S
     loop {
         tokio::select! {
             item = bcast.recv() => match item {
-                Ok(text) => {
+                Ok(frame) => {
+                    // Demo traffic is all JSON text; binary frames are never
+                    // produced by us, so treat them as a protocol error.
+                    let Ok(text) = frame.into_text() else { break };
                     if tx.send(Message::Text(text.into())).await.is_err() {
                         break;
                     }

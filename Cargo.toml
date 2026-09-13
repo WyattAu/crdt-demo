@@ -14,7 +14,7 @@ exclude = ["/target"]
 [dependencies]
 axum = { version = "0.8", features = ["ws"] }
 crdts-kit = { version = "0.1", features = ["serde"] }
-ws-kit = "0.2"
+ws-kit = "0.4"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 tokio = { version = "1", features = ["macros", "rt-multi-thread", "net"] }
