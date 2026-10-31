@@ -1,7 +1,7 @@
 # Deploying crdt-demo
 
 The demo is a single static binary (axum + tokio) with the frontend embedded
-at compile time — no runtime assets, no database. It binds `0.0.0.0` on
+at compile time; no runtime assets, no database. It binds `0.0.0.0` on
 `$PORT` (default `8080`).
 
 ## Prereq: build the image
@@ -38,7 +38,7 @@ render blueprint launch       # from this directory
 
 or push the repo to GitHub and create the service via
 **New + → Blueprint**; Render detects `render.yaml` automatically. Render
-injects `$PORT` itself — the binary honors it, no config needed.
+injects `$PORT` itself; the binary honors it, no config needed.
 
 ## Option C: local Docker
 
@@ -54,7 +54,7 @@ docker run --rm -e PORT=9090 -p 9090:9090 crdt-demo
 ## Health checks
 
 There is no dedicated `/healthz` endpoint. `GET /` returns **200** with the
-page HTML and serves as the liveness probe — `fly.toml`'s
+page HTML and serves as the liveness probe; `fly.toml`'s
 `http_service.checks` and `render.yaml`'s `healthCheckPath` are both
 configured to use it.
 
